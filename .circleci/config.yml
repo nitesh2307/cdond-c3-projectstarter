@@ -113,7 +113,49 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-test
-            
+
+  scan-frontend:
+    docker:
+      # Docker image here
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      # Restore from cache
+      - checkout
+      - restore_cache:
+          keys: [frontend-scan]
+      # Your job code here -nxk - updated code
+      - run:
+          name: Front-end scan
+          command: |
+            cd frontend
+            npm install
+            npm audit --audit-level=critical
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-scan
+                
+  scan-backend:
+    docker:
+      # Docker image here
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      # Restore from cache
+      - checkout
+      - restore_cache:
+          keys: [backend-scan]
+      # Your job code here -nxk - updated code
+      - run:
+          name: Back-end scan
+          command: |
+            cd backend
+            npm install
+            npm audit --audit-level=critical
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-scan
+
 workflows:
   NanoDegree_Project03:
     jobs:
@@ -123,3 +165,7 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
