@@ -187,7 +187,7 @@ workflows:
   NanoDegree_Project03:
     jobs:
       - notify:
-          context: slack-secrets
+          context: Slack-Nitesh
       - build-frontend
       - build-backend
       - test-frontend:
