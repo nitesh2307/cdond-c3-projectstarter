@@ -3,6 +3,7 @@
 *.log
 *.tmp
 *.tmp.*
+*.temp.*
 log.txt
 *.sublime-project
 *.sublime-workspace
