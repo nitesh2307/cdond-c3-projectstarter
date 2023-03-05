@@ -79,6 +79,9 @@ jobs:
     steps:
       # Checkout code from git
       # Restore from cache
+      - checkout
+      - restore_cache:
+          keys: [frontend-test]
       # Your job code here -nxk - updated code
       - run:
           name: Front-end test
@@ -86,6 +89,9 @@ jobs:
             cd frontend
             npm install
             npm run test
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-test
                 
   test-backend:
     docker:
@@ -94,6 +100,9 @@ jobs:
     steps:
       # Checkout code from git
       # Restore from cache
+      - checkout
+      - restore_cache:
+          keys: [backend-test]
       # Your job code here -nxk - updated code
       - run:
           name: Back-end test
@@ -101,6 +110,9 @@ jobs:
             cd backend
             npm install
             npm run test
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-test
             
 workflows:
   NanoDegree_Project03:
