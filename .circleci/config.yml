@@ -177,8 +177,11 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical --force
-            npm audit fix --force
+       #     npm audit fix --force
             npm audit --audit-level=critical
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
@@ -187,7 +190,7 @@ workflows:
   NanoDegree_Project03:
     jobs:
       - notify:
-          context: Slack-Nitesh
+          context: Slack-Nitesh 
       - build-frontend
       - build-backend
       - test-frontend:
@@ -196,5 +199,6 @@ workflows:
           requires: [build-backend]
       - scan-backend:
           requires: [build-backend]
+          context: Slack-Nitesh
       - scan-frontend:
           requires: [build-frontend]
