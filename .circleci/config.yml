@@ -207,7 +207,7 @@ jobs:
 workflows:
   NanoDegree_Project03:
     jobs:
-     - notify:
+      - notify:
            context: Slack-Nitesh 
   #     - build-frontend
   #     - build-backend
@@ -220,4 +220,5 @@ workflows:
   #         context: Slack-Nitesh
   #     - scan-frontend:
   #         requires: [build-frontend]
+  
       - create_infrastructure
