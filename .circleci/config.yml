@@ -13,7 +13,7 @@ commands:
           when: on_fail
           command: |
             # Your code here
-            aws cloudformation delete-stack --stack-name niteshStack-${CIRCLE_WORKFLOW_ID:0:5}
+            aws cloudformation delete-stack --stack-name niteshStack-${CIRCLE_WORKFLOW_ID:0:5} --region us-east-1
             exit 1
 
   revert-migrations:
