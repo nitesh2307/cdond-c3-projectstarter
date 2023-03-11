@@ -226,10 +226,10 @@ jobs:
           command: |
             # Your code here
             aws ec2 describe-instances \
-     	        --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Project,Values=udacity" \
-              --output text >> inventory \
-              --region us-east-1
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Project,Values=udacity" \
+            --output text >> inventory \
+            --region us-east-1
             exit 1
       - persist_to_workspace:
           root: ~/
