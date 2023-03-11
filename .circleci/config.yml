@@ -203,6 +203,10 @@ jobs:
       - checkout
       # Checkout code from git
       - run:
+          name: Install tar
+          command: |
+            yum -y install tar gzip
+      - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
@@ -372,5 +376,7 @@ workflows:
   #         requires: [build-frontend]
   
       - deploy-infrastructure
-  #    - configure_infrastructure
+    #  - configure_infrastructure:
+     #       requires: [deploy-infrastructure]
+
 
