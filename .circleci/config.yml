@@ -290,7 +290,7 @@ jobs:
 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                 curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
                 fi
-     # Here's where you will add some code to rollback on failure    
+     # Here's where you will add some code to rollback on failure  - nxk  
 
     # Exercise: Smoke Testing
   smoke_test:
