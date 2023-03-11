@@ -200,6 +200,7 @@ jobs:
       # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
+      - checkout
       # Checkout code from git
       - run:
           name: Ensure back-end infrastructure exists
