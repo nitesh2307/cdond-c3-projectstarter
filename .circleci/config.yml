@@ -13,7 +13,14 @@ commands:
           when: on_fail
           command: |
             # Your code here
-            aws cloudformation delete-stack --stack-name niteshStack-${CIRCLE_WORKFLOW_ID:0:5} --region us-east-1
+            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1
+            exit 1
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            # Your code here
+            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1
             exit 1
 
   revert-migrations:
@@ -188,22 +195,48 @@ jobs:
           paths: [backend/node_modules]
           key: backend-scan
 
-  create_infrastructure:
+  deploy-infrastructure:
     docker:
-      # Docker image here
+      # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
-      - checkout
+      # Checkout code from git
       - run:
-          name: Create Cloudformation Stack
+          name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
-              --template-file template.yml \
-              --stack-name niteshStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"   \
               --region us-east-1
-      # Fail the job intentionally to simulate an error.
-      # Uncomment the line below if you want to fail the current step
-      - run: return 1
+              exit 1
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"    \
+              --region us-east-1
+              exit 1
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            # Your code here
+            aws ec2 describe-instances \
+     	        --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Project,Values=udacity" \
+              --output text >> inventory \
+              --region us-east-1
+            exit 1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure  
+
       - destroy-environment
   
   configure_infrastructure:
@@ -337,15 +370,6 @@ workflows:
   #     - scan-frontend:
   #         requires: [build-frontend]
   
-  #    - create_infrastructure
+      - deploy-infrastructure
   #    - configure_infrastructure
-  #    - smoke_test
-      - create_and_deploy_front_end
-      - promote_to_production:
-            requires: 
-                - create_and_deploy_front_end
-      - get_last_deployment_id
-      - clean_up_old_front_end:
-            requires:
-                - get_last_deployment_id
-                - promote_to_production
+
