@@ -6,6 +6,8 @@
   #hosts: 44.192.7.133
   user: ubuntu
   become: true
+  vars:
+    - ansible_host_key_checking: false
   become_method: sudo
   become_user: root
   roles:
