@@ -272,6 +272,8 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
 
+      - destroy-environment
+
   run-migrations:
     docker:
       - image: circleci/node:14.18.1
@@ -294,6 +296,7 @@ jobs:
               fi
      # Here's where you will add some code to rollback on failure  - nxk  
       - revert-migrations
+      - destroy-environment
   deploy-frontend:
     docker:
       # Docker image here that supports AWS CLI
