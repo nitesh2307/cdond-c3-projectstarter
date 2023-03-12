@@ -282,13 +282,53 @@ jobs:
               # Run and save the migration output
               npm run migrations > migrations_dump.txt
       - run:
-          name: Send migration results to memstash
+          name: Send migration results to kvdb
           command: |
               if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
               then
               curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
      # Here's where you will add some code to rollback on failure  - nxk  
+  deploy-frontend:
+    docker:
+      # Docker image here that supports AWS CLI
+    steps:
+      # Checkout code from git
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Get backend url
+          command: |
+            # your code here
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+      - run:
+          name: Deploy frontend objects
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure      
+                    
+  deploy-backend:
+    docker:
+      # Docker image here that supports Ansible
+    steps:
+      # Checkout code from git
+      # Add ssh keys with fingerprint
+      # attach workspace
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure  
+
+
+
 
     # Exercise: Smoke Testing
   smoke_test:
@@ -404,10 +444,10 @@ workflows:
   #     - scan-frontend:
   #         requires: [build-frontend]
   
-    #  - deploy-infrastructure
-    #  - configure_infrastructure
-     #       requires: [deploy-infrastructure]
-      - run-migrations
+     - deploy-infrastructure
+     - configure_infrastructure:
+            requires: [deploy-infrastructure]
+     # - run-migrations
      #         requires: [configure_infrastructure]
 
 
