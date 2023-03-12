@@ -257,7 +257,7 @@ jobs:
           fingerprints: ["1b:3d:af:72:9f:0f:18:4b:70:ca:aa:83:81:d6:3e:05"] # You can get this ID in the section where you registered the SSH Key
       - attach_workspace:
           at: .circleci/ansible/
-          paths:
+       #   paths:
        #     - project/.circleci/ansible/inventory.txt
       - run:
           name: Install dependencies
@@ -269,9 +269,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            cat project.circleci/ansible/inventory.txt
             cd .circleci/ansible
-            cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
 
       - destroy-environment
