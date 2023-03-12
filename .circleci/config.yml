@@ -307,6 +307,13 @@ jobs:
       # Checkout code from git
       - checkout
       - run:
+          name: Get backend url
+          command: |
+            # your code here
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'--filters "Name=tag:Project,Values=udacity")
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+      - run:
           name: Install dependencies 1
           command: |
             yum -y install tar
@@ -315,15 +322,9 @@ jobs:
           name: Install dependencies 2
           command: |
             cd frontend
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            #     curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-      - run:
-          name: Get backend url
-          command: |
-            # your code here
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'--filters "Name=tag:Project,Values=udacity")
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
+
       - run:
           name: Deploy frontend objects
           command: |
@@ -500,11 +501,11 @@ workflows:
    #        requires: [scan-frontend]
    #   - configure_infrastructure:
    #         requires: [deploy-infrastructure]
-      - run-migrations
+    #  - run-migrations
    #         requires: [configure_infrastructure]
-      - deploy-backend:
-            requires: [run-migrations]
+    #  - deploy-backend:
+     #       requires: [run-migrations]
       - deploy-frontend:
-            requires: [run-migrations]
+      #      requires: [run-migrations]
 
 
