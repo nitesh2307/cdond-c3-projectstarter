@@ -31,15 +31,18 @@ commands:
       - run:
           name: Revert migrations
           # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
+            # SUCCESS = 1
+            SUCCESS = $(curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7})
             if(( $SUCCESS==1 )); 
             then
             #  cd ~/project/backend
             #  npm install
             #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+            npm run migration:revert
+            #exit 1
             fi
             
 jobs:
@@ -238,7 +241,7 @@ jobs:
             --region us-east-1
           #  exit 1
       - persist_to_workspace:
-          root: ~/
+          root: .circleci/
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure  
@@ -271,7 +274,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:14.18.1
     steps:
       # Checkout code from git
       - checkout
@@ -290,6 +293,7 @@ jobs:
               curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
      # Here's where you will add some code to rollback on failure  - nxk  
+      - revert-migrations
 
 
 
@@ -407,10 +411,10 @@ workflows:
   #         context: Slack-Nitesh
   #     - scan-frontend:
   #         requires: [build-frontend]
-      - deploy-infrastructure
-      - configure_infrastructure:
-            requires: [deploy-infrastructure]
-     # - run-migrations
-     #         requires: [configure_infrastructure]
+  #    - deploy-infrastructure
+  #    - configure_infrastructure:
+  #          requires: [deploy-infrastructure]
+      - run-migrations
+              requires: [configure_infrastructure]
 
 
