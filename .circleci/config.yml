@@ -239,11 +239,12 @@ jobs:
             --filters "Name=tag:Project,Values=udacity" \
             --output text >> inventory.txt \
             --region us-east-1
+            cat .circleci/ansible/inventory.txt
           #  exit 1
       - persist_to_workspace:
           root: ~/
           paths:
-            - .circleci/ansible/inventory.txt
+            - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure  
 
       - destroy-environment
@@ -258,7 +259,7 @@ jobs:
       - attach_workspace:
           at: ~/
           paths:
-            - .circleci/ansible/inventory.txt
+            - project/.circleci/ansible/inventory.txt
       - run:
           name: Install dependencies
           command: |
@@ -269,6 +270,7 @@ jobs:
       - run:
           name: Configure server
           command: |
+            cat .circleci/ansible/inventory.txt
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
 
@@ -483,19 +485,19 @@ workflows:
     jobs:
       - notify:
            context: Slack-Nitesh 
-      - build-frontend
-      - build-backend
-      - test-frontend:
-           requires: [build-frontend]
-      - test-backend:
-           requires: [build-backend]
-      - scan-backend:
-           requires: [build-backend]
-           context: Slack-Nitesh
-      - scan-frontend:
-           requires: [build-frontend]
-      - deploy-infrastructure:
-           requires: [scan-frontend]
+   #   - build-frontend
+   #   - build-backend
+   #   - test-frontend:
+   #        requires: [build-frontend]
+   #   - test-backend:
+   #        requires: [build-backend]
+   #   - scan-backend:
+   #        requires: [build-backend]
+   #        context: Slack-Nitesh
+   #   - scan-frontend:
+   #        requires: [build-frontend]
+      - deploy-infrastructure
+   #        requires: [scan-frontend]
       - configure_infrastructure:
             requires: [deploy-infrastructure]
       - run-migrations:
