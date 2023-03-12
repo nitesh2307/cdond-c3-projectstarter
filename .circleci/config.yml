@@ -443,8 +443,8 @@ workflows:
   #         context: Slack-Nitesh
   #     - scan-frontend:
   #         requires: [build-frontend]
-     - deploy-infrastructure
-     - configure_infrastructure:
+      - deploy-infrastructure
+      - configure_infrastructure:
             requires: [deploy-infrastructure]
      # - run-migrations
      #         requires: [configure_infrastructure]
