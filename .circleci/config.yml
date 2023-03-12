@@ -286,7 +286,8 @@ jobs:
               cd backend
               npm install
               # Run and save the migration output
-              npm run migrations > migrations_dump.txt
+            #  npm run migrations > migrations_dump.txt
+              npm run migrations
       - run:
           name: Send migration results to kvdb
           command: |
@@ -294,9 +295,10 @@ jobs:
               then
               curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
+              curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '2'
      # Here's where you will add some code to rollback on failure  - nxk  
-      - revert-migrations
-      - destroy-environment
+   #   - revert-migrations
+    #  - destroy-environment
   deploy-frontend:
     docker:
       # Docker image here that supports AWS CLI
@@ -494,12 +496,12 @@ workflows:
    #        context: Slack-Nitesh
    #   - scan-frontend:
    #        requires: [build-frontend]
-      - deploy-infrastructure
+   #   - deploy-infrastructure
    #        requires: [scan-frontend]
-      - configure_infrastructure:
-            requires: [deploy-infrastructure]
-      - run-migrations:
-            requires: [configure_infrastructure]
+   #   - configure_infrastructure:
+   #         requires: [deploy-infrastructure]
+      - run-migrations
+   #         requires: [configure_infrastructure]
       - deploy-backend:
             requires: [run-migrations]
       - deploy-frontend:
