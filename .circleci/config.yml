@@ -501,11 +501,11 @@ workflows:
    #        requires: [scan-frontend]
    #   - configure_infrastructure:
    #         requires: [deploy-infrastructure]
-    #  - run-migrations
+   #  - run-migrations
    #         requires: [configure_infrastructure]
-    #  - deploy-backend:
-     #       requires: [run-migrations]
-       - deploy-frontend:
+   #  - deploy-backend:
+   #       requires: [run-migrations]
+      - deploy-frontend
       #      requires: [run-migrations]
 
 
