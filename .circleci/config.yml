@@ -302,17 +302,11 @@ jobs:
   deploy-frontend:
     docker:
       # Docker image here that supports AWS CLI
-      - image: amazon/aws-cli
+     # - image: amazon/aws-cli
+      - image: sleavely/node-awscli:14.x
     steps:
       # Checkout code from git
       - checkout
-      - run:
-          name: Get backend url
-          command: |
-            # your code here
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'--filters "Name=tag:Project,Values=udacity")
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
       - run:
           name: Install dependencies 1
           command: |
@@ -323,8 +317,16 @@ jobs:
           command: |
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
-
+            yum -y install nodejs 
+      - run:
+          name: Get backend url
+          command: |
+            # your code here
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'--filters "Name=tag:Project,Values=udacity")
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo  API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            echo "${API_URL}"
+            cat frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
