@@ -415,6 +415,6 @@ workflows:
   #    - configure_infrastructure:
   #          requires: [deploy-infrastructure]
       - run-migrations
-              requires: [configure_infrastructure]
+         #     requires: [configure_infrastructure]
 
 
