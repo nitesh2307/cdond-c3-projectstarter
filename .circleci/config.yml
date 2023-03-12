@@ -322,7 +322,7 @@ jobs:
           name: Install dependencies 2
           command: |
             cd frontend
-            #     curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
 
       - run:
