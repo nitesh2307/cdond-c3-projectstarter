@@ -411,7 +411,7 @@ jobs:
             # your code here
             apk add --update --no-cache aws-cli curl nodejs npm
       - run:
-          name: Get backend url
+          name: Get backend url for front-end test
           command: |
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \
@@ -444,7 +444,49 @@ jobs:
             else
               return 1
             fi
+     # - destroy-environment 
+     #  - revert-migrations
+  
+  cloudfront-update:
+    docker:
+      # Docker image here that supports AWS CLI
+      - image: python:3.11.0-alpine3.16
+    steps:
+      # Checkout code from git
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            apk add --update --no-cache tar gzip nodejs npm curl
+            pip install awscli
+      - run:
+          name: store old workflowid  
+          command: |
+            # your code here
+            aws cloudformation list-exports \
+              --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --region us-east-1\
+              --output text >> OldWorkflowID.txt
+            cat -n OldWorkflowID.txt  
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/OldWorkflowID.txt   
 
+      - run:
+          name: Update cloudfront distribution
+          command: |      
+            # your code here
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name InitialStack \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1\
+              --tags project=udapeople
+           
+      # Here's where you will add some code to rollback on failure  
+     # - destroy-environment
+     # - revert-migrations
 # Job 1
   # Executes the bucket.yml - Deploy an S3 bucket, and interface with that bucket to synchronize the files between local and the bucket.
   # Note that the `--parameter-overrides` let you specify a value that override parameter value in the bucket.yml template file.
@@ -553,5 +595,8 @@ workflows:
            requires: [run-migrations]
       - smoke-test:
            requires: [deploy-backend, deploy-frontend]  
+      - cloudfront-update:
+           requires: [smoke-test]
+
 
 
