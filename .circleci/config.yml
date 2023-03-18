@@ -79,11 +79,10 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            # Your code here - NXK - Code updated
             cd frontend
             npm install
             npm run build
-            # exit 1
+          # exit 1
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -98,7 +97,6 @@ jobs:
       - run:
           name: Back-end build
           command: |
-             # Your code here - NXK - updated the code
               cd backend
               npm install
               npm run build
@@ -107,18 +105,13 @@ jobs:
           paths: [backend/node_modules]
           key: backend-build
 
-
   test-frontend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
       - checkout
       - restore_cache:
           keys: [frontend-test]
-      # Your job code here -nxk - updated code
       - run:
           name: Front-end test
           command: |
@@ -131,15 +124,11 @@ jobs:
                 
   test-backend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
       - checkout
       - restore_cache:
           keys: [backend-test]
-      # Your job code here -nxk - updated code
       - run:
           name: Back-end test
           command: |
@@ -152,15 +141,11 @@ jobs:
 
   scan-frontend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
       - checkout
       - restore_cache:
           keys: [frontend-scan]
-      # Your job code here -nxk - updated code
       - run:
           name: Front-end scan
           command: |
@@ -175,15 +160,10 @@ jobs:
                 
   scan-backend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
       - checkout
       - restore_cache:
-          keys: [backend-scan]
-      # Your job code here -nxk - updated code
       - run:
           name: Back-end scan
           command: |
@@ -201,11 +181,9 @@ jobs:
 
   deploy-infrastructure:
     docker:
-      # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
       - checkout
-      # Checkout code from git
       - run:
           name: Install tar
           command: |
@@ -229,11 +207,10 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"    \
               --region us-east-1
-             # exit 1
+          #    exit 1
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            # Your code here
             cd .circleci/ansible
             aws ec2 describe-instances \
             --filters Name=tag:Name,Values="backend-${CIRCLE_WORKFLOW_ID:0:7}" \
@@ -246,7 +223,6 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure  
-
       - destroy-environment
   
   configure_infrastructure:
@@ -258,8 +234,6 @@ jobs:
           fingerprints: ["1b:3d:af:72:9f:0f:18:4b:70:ca:aa:83:81:d6:3e:05"] # You can get this ID in the section where you registered the SSH Key
       - attach_workspace:
           at: ~/
-       #   paths:
-       #     - project/.circleci/ansible/inventory.txt
       - run:
           name: Install dependencies
           command: |
@@ -280,6 +254,7 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> backend/.env
             echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
+            echo "here is envornment variable from circleci - Nitesh"
             cat backend/.env
             cd .circleci/ansible
             cat inventory.txt
@@ -338,7 +313,7 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values="backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values="backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1 --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo  API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             echo "${API_URL}"
