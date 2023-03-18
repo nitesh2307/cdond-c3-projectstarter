@@ -1,0 +1,11 @@
+groups:
+  - name: Allinstances
+    rule
+    - alert: UsingTooMuchMemory
+    expr: node_memory_MemFree_bytes < 1000000
+    for: 1m
+    annotations:
+      title: 'Instance {{ $lables.instance}} is almost out memory'.
+      description: '{{ $lables.instance}} of job {{ $lables.job }}' has been down.
+    labels:
+      severity: 'critical'
