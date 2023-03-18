@@ -399,7 +399,7 @@ jobs:
 
     # Exercise: Smoke Testing
 
-  smoke_test:
+  smoke-test:
     docker:
       - image: python:3.11.0-alpine3.17
     steps:
