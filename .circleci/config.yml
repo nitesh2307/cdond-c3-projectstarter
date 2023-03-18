@@ -9,18 +9,19 @@ commands:
       # Add parameter here   
     steps:
       - run:
-          name: Destroy environments
+          name: Destroy environments - Backend
           when: on_fail
           command: |
             # Your code here
             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1
             exit 1
       - run:
-          name: Destroy environments
+          name: Destroy environments Frontend
           when: on_fail
           command: |
             # Your code here
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1
+            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force --region us-east-1
             exit 1
 
   revert-migrations:
@@ -415,7 +416,7 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+            --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} --region us-east-1 \
             --output text)
             echo ${BACKEND_IP}
             export API_URL="http://${BACKEND_IP}:3030"
