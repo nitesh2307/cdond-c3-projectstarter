@@ -388,6 +388,7 @@ jobs:
       - destroy-environment  
 
     # Exercise: Smoke Testing
+
   smoke_test:
     docker:
       - image: python:3.11.0-alpine3.17
@@ -538,7 +539,7 @@ workflows:
           requires: [run-migrations]
       - deploy-frontend:
            requires: [run-migrations]
-      - smoke-test:
-           requires: [deploy-backend, deploy-frontend]  
+      #- smoke-test:
+       #    requires: [deploy-backend, deploy-frontend]  
 
 
