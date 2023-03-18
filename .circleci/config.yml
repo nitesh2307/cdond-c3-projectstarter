@@ -9,20 +9,14 @@ commands:
       # Add parameter here   
     steps:
       - run:
-          name: Destroy environments - Backend
+          name: Destroy environments
           when: on_fail
           command: |
             # Your code here
-            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1
-            exit 1
-      - run:
-          name: Destroy environments Frontend
-          when: on_fail
-          command: |
-            # Your code here
-            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" --region us-east-1
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} --region us-east-1
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} --region us-east-1
             aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force --region us-east-1
-            exit 1
+        #    exit 1
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -36,7 +30,7 @@ commands:
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             # SUCCESS = 1
-            SUCCESS = "$(curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7} -s)
+            SUCCESS = "$(curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7} -s)"
             if(( $SUCCESS==1 )); 
             then
                cd ~/project/backend
@@ -412,7 +406,7 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              return 1
+              return 0
             else
               return 1
             fi
@@ -455,81 +449,35 @@ jobs:
      # Here's where you will add some code to rollback on failure  - nxk  
       - revert-migrations
       - destroy-environment
-# Job 1
-  # Executes the bucket.yml - Deploy an S3 bucket, and interface with that bucket to synchronize the files between local and the bucket.
-  # Note that the `--parameter-overrides` let you specify a value that override parameter value in the bucket.yml template file.
-  create_and_deploy_front_end:
+
+  cleanup:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Execute bucket.yml - Create Cloudformation Stack
+          name: Install dependencies
           command: |
-            aws cloudformation deploy \
-            --template-file bucket.yml \
-            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
-            --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --region us-east-1
-      # Uncomment the step below if yoou wish to upload all contents of the current directory to the S3 bucket
-      # - run: aws s3 sync . s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
-  
-  # Exercise: Promote to Production - Job 2
-  # Fetch and save the pipeline ID (bucket ID) responsible for the last release.
-  get_last_deployment_id:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run: yum install -y tar gzip
-      - run:
-          name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
-          command: |
-            aws cloudformation \
-            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text > ~/textfile.txt \
-            --region us-east-1
-      - persist_to_workspace:
-          root: ~/
-          paths: 
-            - textfile.txt 
-  
-  # Exercise: Promote to Production - Job 3
-  # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`. 
-  # Notice here we use the stack name `production-distro` which is the same name we used while deploying to the S3 bucket manually.
-  promote_to_production:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Execute cloudfront.yml
-          command: |
-            aws cloudformation deploy \
-            --template-file cloudfront.yml \
-            --stack-name prod-nk1 \
-            --parameter-overrides PipelineID="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"  \
-            --region us-east-1
-  # Exercise: Promote to Production - Job 4
-  # Destroy the previous production version's S3 bucket and CloudFormation stack. 
-  clean_up_old_front_end:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run: yum install -y tar gzip
+            yum install tar gzip -y
       - attach_workspace:
           at: ~/
       - run:
-          name: Destroy the previous production version's S3 bucket and CloudFormation stack. 
-          # Use $OldBucketID environment variable or mybucket644752792305 below.
-          # Similarly, you can create and use $OldStackID environment variable in place of production-distro 
+          name: Remove old stacks and files
           command: |
-            export OldBucketID=$(cat ~/textfile.txt)
-            aws s3 rm "s3://${OldBucketID}" --recursive 
-          #  aws cloudformation delete-stack --stack-name prod-nk1 
-          #  aws cloudformation delete-stack --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
-          #  aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            echo Stack names: "${STACKS[@]}"
+            export OldWorkflowID=$(cat ~/project/OldWorkflowID2.txt)
+            cat -n OldWorkflowID.txt  
+              
+            if [[ "${CIRCLE_WORKFLOW_ID}" != "${OldWorkflowID}" ]]
+            then
+              aws s3 rm "s3://udapeople-${OldWorkflowID:29:7}" --recursive || true
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}" || true
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}" || true
+            else
+              echo "Stack is the latest"
+            fi    
 
 workflows:
   NanoDegree_Project03:
@@ -548,7 +496,10 @@ workflows:
       - scan-frontend:
            requires: [build-frontend]
       - deploy-infrastructure:
-           requires: [scan-frontend]
+           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+           filters:
+              branches:
+                only: [master]
       - configure_infrastructure:
             requires: [deploy-infrastructure]
       - run-migrations:
@@ -561,3 +512,5 @@ workflows:
            requires: [deploy-backend, deploy-frontend]  
       - cloudfront-update:
            requires: [smoke-test]
+   #   - cleanup:
+    #      requires: [cloudfront-update]  
