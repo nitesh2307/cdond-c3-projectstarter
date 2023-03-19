@@ -478,6 +478,6 @@ jobs:
 workflows:
   NanoDegree_Project03:
     jobs:
-      - cloudfront-update
-      - cleanup:
-           requires: [cloudfront-update]  
+
+      - deploy-infrastructure
+
