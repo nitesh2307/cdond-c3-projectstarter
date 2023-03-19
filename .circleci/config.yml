@@ -14,8 +14,8 @@ commands:
           command: |
             # Your code here
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} --region us-east-1
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} --region us-east-1
             aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force --region us-east-1
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} --region us-east-1
         #    exit 1
 
   revert-migrations:
@@ -296,8 +296,9 @@ jobs:
                 curl --insecure https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
      # Here's where you will add some code to rollback on failure  - nxk  
-      - destroy-environment
+
       - revert-migrations
+      - destroy-environment
     
   deploy-frontend:
     docker:
