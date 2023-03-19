@@ -28,18 +28,10 @@ commands:
           # Add when this will run
           when: on_fail
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            # SUCCESS = 1
-            SUCCESS = "$(curl https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7} -s)"
-            if(( $SUCCESS==1 )); 
-            then
-               cd ~/project/backend
-               npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-            npm run migration:revert
-            #exit 1
-            fi
-            
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+          
 jobs:
   notify:
     docker:
@@ -304,8 +296,9 @@ jobs:
               fi
               #curl --insecure https://kvdb.io/Cby1RbQrvmHF1YvEoB1Ge4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '2'
      # Here's where you will add some code to rollback on failure  - nxk  
+              exit 1
       - revert-migrations
-      - destroy-environment
+    #  - destroy-environment
 
   deploy-frontend:
     docker:
@@ -482,35 +475,5 @@ jobs:
 workflows:
   NanoDegree_Project03:
     jobs:
-      - notify:
-           context: Slack-Nitesh 
-      - build-frontend
-      - build-backend
-      - test-frontend:
-           requires: [build-frontend]
-      - test-backend:
-           requires: [build-backend]
-      - scan-backend:
-           requires: [build-backend]
-           context: Slack-Nitesh
-      - scan-frontend:
-           requires: [build-frontend]
-      - deploy-infrastructure:
-           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-           filters:
-              branches:
-                only: [master]
-      - configure_infrastructure:
-            requires: [deploy-infrastructure]
-      - run-migrations:
-            requires: [configure_infrastructure]
-      - deploy-backend:
-          requires: [run-migrations]
-      - deploy-frontend:
-           requires: [run-migrations]
-      - smoke-test:
-           requires: [deploy-backend, deploy-frontend]  
-      - cloudfront-update:
-           requires: [smoke-test]
-      - cleanup:
-           requires: [cloudfront-update]  
+
+      - run-migrations
